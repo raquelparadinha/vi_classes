@@ -43,6 +43,14 @@ def main():
     # Create an actor
     coneActor = vtkActor()
     coneActor.SetMapper(coneMapper)
+    coneActor.GetProperty().SetColor(0.2, 0.63, 0.79)
+    # coneActor.GetProperty().SetColor(1, 0, 0)
+    # coneActor.GetProperty().SetRepresentationToWireframe()
+    coneActor.GetProperty().SetRepresentationToSurface()
+    # coneActor.GetProperty().SetRepresentationToPoints()
+    # coneActor.GetProperty().SetOpacity(0)   # a figura não é visível
+    # coneActor.GetProperty().SetOpacity(1)   # a figura é visível
+    coneActor.GetProperty().SetOpacity(0.5)   # a figura é visível parcialmente
 
     # Create a sphere
     sphereSource = vtkSphereSource()
@@ -73,24 +81,24 @@ def main():
     cylinderActor.SetMapper(cylinderMapper)
     cylinderActor.SetPosition(0, 0, -5)
 
-    # Create a cube
-    cubeSource = vtkCubeSource()
-    cubeSource.SetXLength(2)
+    # # Create a cube
+    # cubeSource = vtkCubeSource()
+    # cubeSource.SetXLength(2)
 
-    cubeMapper = vtkPolyDataMapper()
-    cubeMapper.SetInputConnection(cubeSource.GetOutputPort())
+    # cubeMapper = vtkPolyDataMapper()
+    # cubeMapper.SetInputConnection(cubeSource.GetOutputPort())
 
-    cubeActor = vtkActor()
-    cubeActor.SetMapper(cubeMapper)
-    cubeActor.GetProperty().SetRepresentationToWireframe()
-    cubeActor.SetPosition(0, 5, 0)
+    # cubeActor = vtkActor()
+    # cubeActor.SetMapper(cubeMapper)
+    # cubeActor.GetProperty().SetRepresentationToWireframe()
+    # cubeActor.SetPosition(0, 5, 0)
 
     # Create the Renderer and assign actors 
     ren = vtkRenderer()
     ren.AddActor( coneActor )
     ren.AddActor( sphereActor )
     ren.AddActor( cylinderActor )
-    ren.AddActor( cubeActor )
+    # ren.AddActor( cubeActor )
     ren.SetBackground( 1, 1, 1)
 
     # Set the camera position
@@ -99,19 +107,19 @@ def main():
     # cam1.SetViewUp(0,1,1)
     # ren.SetActiveCamera(cam1)
 
-    # defaultCamera = ren.GetActiveCamera()
+    defaultCamera = ren.GetActiveCamera()
 
-    # # Set the camera position
-    # defaultCamera.SetPosition(10, 10, 0)
-    # defaultCamera.SetViewUp(0, 1, 1)
-    # defaultCamera.SetParallelProjection(True)
+    # Set the camera position
+    defaultCamera.SetPosition(10, 10, 0)
+    defaultCamera.SetViewUp(0, 1, 1)
+    defaultCamera.SetParallelProjection(True)
     
-    cam1 = ren.GetActiveCamera()
-    light = vtkLight()
-    light.SetColor(1,0,0)
-    light.SetFocalPoint(cam1.GetFocalPoint())
-    light.SetPosition(cam1.GetPosition())
-    ren.AddLight(light)
+    # cam1 = ren.GetActiveCamera()
+    # light = vtkLight()
+    # light.SetColor(1,0,0)
+    # light.SetFocalPoint(cam1.GetFocalPoint())
+    # light.SetPosition(cam1.GetPosition())
+    # ren.AddLight(light)
 
 
     # Create the RendererWindow    
