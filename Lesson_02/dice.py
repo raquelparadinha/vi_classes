@@ -17,7 +17,7 @@ import vtkmodules.vtkInteractionStyle
 # noinspection PyUnresolvedReferences
 import vtkmodules.vtkRenderingOpenGL2
 from vtkmodules.vtkFiltersSources import vtkConeSource, vtkSphereSource, vtkCylinderSource, vtkCubeSource
-from vtkmodules.vtkIOImage import vtkPNGReader
+from vtkmodules.vtkIOImage import vtkJPEGReader
 from vtkmodules.vtkRenderingCore import (
     vtkActor,
     vtkPolyDataMapper,
@@ -29,77 +29,69 @@ from vtkmodules.vtkRenderingCore import (
     vtkTexture
 )
 
-def main():
-
-    # # Create a cone
-    # coneSource = vtkConeSource()
-    # coneSource.SetHeight(2) 
-    # coneSource.SetRadius(1)
-    # coneSource.SetResolution(10)
-
-    # # Create a mapper
-    # coneMapper = vtkPolyDataMapper()
-    # coneMapper.SetInputConnection( coneSource.GetOutputPort() )
-
-    # # Create an actor
-    # coneActor = vtkActor()
-    # coneActor.SetMapper(coneMapper)
-    # coneActor.GetProperty().SetColor(0.2, 0.63, 0.79)
-    # coneActor.GetProperty().SetRepresentationToSurface()
-
+# returns the actor of the face
+def make_face(rotation, translation, texture_filename):
     # Create a plane
     planeSource = vtkCubeSource()
     planeSource.SetXLength(10)
     planeSource.SetYLength(10)
     planeSource.SetZLength(0.1)
 
+    # Create a texture
+    textureReader = vtkJPEGReader()
+    textureReader.SetFileName(texture_filename)
+
+    texture = vtkTexture()
+    texture.SetInputConnection(textureReader.GetOutputPort())
+    texture.InterpolateOn()
+
     # Create a mapper
     planeMapper = vtkPolyDataMapper()
-    planeMapper.SetInputConnection( planeSource.GetOutputPort() )
+    planeMapper.SetInputConnection(planeSource.GetOutputPort())
+
+    tcoords = vtk.vtkTextureMapToPlane()
+    tcoords.SetInputConnection(planeSource.GetOutputPort())
+    planeMapper.SetInputConnection(tcoords.GetOutputPort())
 
     planeActor = vtkActor()
     planeActor.SetMapper(planeMapper)
-    # planeActor.GetProperty().SetRepresentationToSurface()
-
-
-    reader = vtkPNGReader()
-    reader.SetFileName("./images/troll.png")
-
-    # Texture Object
-    texture = vtkTexture()
-    texture.SetInputConnection(reader.GetOutputPort())
-    texture.InterpolateOn()
-    # Assign texture to the plane actor
+    planeActor.GetProperty().SetRepresentationToSurface()
     planeActor.SetTexture(texture)
-    # Fit texture to plane
-    # tcoords = vtk.vtkTextureMapToPlane()
-    # tcoords.SetInputConnection(planeSource.GetOutputPort())
-    # planeActor.GetMapper().SetInputConnection(tcoords.GetOutputPort())
 
-    # transform = vtk.vtkTransformTextureCoords()
-    # transform.SetInputConnection(tcoords.GetOutputPort())
-    # transform.SetScale(10, 10, 10)
-    # planeActor.GetMapper().SetInputConnection(transform.GetOutputPort())
+    transform = vtk.vtkTransform()
+    transform.Translate(translation[0], translation[1], translation[2])
+    transform.RotateX(rotation[0])
+    transform.RotateY(rotation[1])
+    transform.RotateZ(rotation[2])
+    planeActor.SetUserTransform(transform)
+
+    return planeActor
+
+def main():
+    texture_filenames = ["Im1.jpg", "Im2.jpg", "Im3.jpg", "Im4.jpg", "Im5.jpg", "Im6.jpg"]
+    texture_filenames = ["./images/" + filename for filename in texture_filenames]
+
+    actors = []
+    actors.append(make_face([90, 0, 0], [0, 5, 0], texture_filenames[0]))
+    actors.append(make_face([-90, 0, 0], [0, -5, 0], texture_filenames[5]))
+    actors.append(make_face([0, 90, 0], [5, 0, 0], texture_filenames[1]))
+    actors.append(make_face([0, -90, 0], [-5, 0, 0], texture_filenames[4]))
+    actors.append(make_face([0, 0, 0], [0, 0, 5], texture_filenames[2]))
+    actors.append(make_face([0, 0, 0], [0, 0, -5], texture_filenames[3]))
 
     ren = vtkRenderer()
-    # ren.AddActor( coneActor )
-    ren.AddActor( planeActor )
-    ren.SetBackground(1, 1, 1)
-    ren.SetBackground(1, 1, 1)
-    ren.SetBackground( 1, 1, 1)
+    for actor in actors:
+        ren.AddActor(actor)
+    ren.SetBackground(0.2, 0.2, 0.2)
 
     cam = ren.GetActiveCamera()
-
-    # Set the camera position
-    cam.SetPosition(0, 0, 15)
+    cam.SetPosition(0, 0, 30)
     cam.SetViewUp(0, 1, 0)
     cam.SetParallelProjection(True)
     
 
-    # Create the RendererWindow    
     renWin = vtkRenderWindow()
     renWin.AddRenderer(ren)
-
     renWin.SetWindowName('Cone')
     renWin.SetSize(500, 500)
     
@@ -110,8 +102,6 @@ def main():
     #     # rotate the active camera by one degree
     #     ren.GetActiveCamera().Azimuth(1)
 
-    # Adds a render window interactor to the cone example to
-    # enable user interaction (e.g. to rotate the scene)
     iren = vtkRenderWindowInteractor()
     iren.SetRenderWindow(renWin)
     iren.Initialize()
